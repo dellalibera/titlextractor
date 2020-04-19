@@ -32,5 +32,12 @@ cat urls.txt | titlextractor -f
 <img alt="titlextractor" title="titlextractor" src="./screen.png" width="450">
 
 ---
+
+## Resources
+I was inspired by:
+- [Tokenizing HTML Streams in Go](https://drstearns.github.io/tutorials/tokenizing/)
+- [httprobe](https://github.com/tomnomnom/httprobe)
+
+---
 ## License
 [MIT](https://github.com/dellalibera/titlefinder/blob/master/LICENSE) 
