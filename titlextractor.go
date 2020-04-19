@@ -97,7 +97,7 @@ func main() {
 	flag.BoolVar(&followRedirect, "f", false, "Follow redirects")
 
 	var timeout int
-	flag.IntVar(&timeout, "t", 20, "Timeout (in seconds)")
+	flag.IntVar(&timeout, "t", 20, "Request timeout (in seconds)")
 
 	flag.Parse()
 
