@@ -17,9 +17,10 @@ import (
 )
 
 const (
-	blue  = "\033[1;34m%s\033[0m"
-	red   = "\033[1;31m%s\033[0m"
-	green = "\033[1;32m%s\033[0m"
+	blue   = "\033[1;34m%s\033[0m"
+	red    = "\033[1;31m%s\033[0m"
+	green  = "\033[1;32m%s\033[0m"
+	yellow = "\033[1;33m%s\033[0m"
 )
 
 func getTitle(body io.ReadCloser) string {
@@ -59,21 +60,21 @@ func getWebContent(client *http.Client, wg *sync.WaitGroup, urls <-chan string, 
 		req, err := http.NewRequest(http.MethodGet, url, nil)
 
 		if err != nil {
-			results <- []string{url, fmt.Sprintf(red, err.Error())}
+			results <- []string{url, "-1", fmt.Sprintf(red, err.Error())}
 			return
 		}
 
 		resp, err := client.Do(req)
 
 		if err != nil {
-			results <- []string{url, fmt.Sprintf(red, err.Error())}
+			results <- []string{url, "-1", fmt.Sprintf(red, err.Error())}
 			return
 		}
 
 		if resp != nil {
 			defer resp.Body.Close()
 			// 3 - write the result in 'results' channel
-			results <- []string{url, getTitle(resp.Body)}
+			results <- []string{url, fmt.Sprint(resp.StatusCode), fmt.Sprintf(green, getTitle(resp.Body))}
 		}
 
 	}
@@ -84,7 +85,8 @@ func printOutput(wg *sync.WaitGroup, results <-chan []string) {
 
 	for result := range results {
 		fmt.Printf(blue, result[0])
-		fmt.Printf(green, " --> "+result[1]+"\n")
+		fmt.Printf(yellow, " --> ["+result[1]+"] ")
+		fmt.Printf(result[2] + "\n")
 	}
 }
 
