@@ -1,6 +1,6 @@
 # TitleXtractor   
 
-This tool takes a list of urls and extract the content of `<title>` tag.
+This tool takes a list of urls and extracts the content of `<title>` tag.
 
 ---
 ## Dependencies
