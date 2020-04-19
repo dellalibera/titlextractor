@@ -17,7 +17,7 @@ go get -u github.com/dellalibera/titlextractor/
 ---
 
 ## Usage
-Parameter   | Descriptiontimeout
+Parameter   | Description
 ----------- | -------------
 -t          | Specify the request timeout (expressed in seconds - default 20s)
 -f          | Boolean value used to decide to follow or not redirections (default false)
