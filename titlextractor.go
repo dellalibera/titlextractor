@@ -16,16 +16,14 @@ import (
 	"golang.org/x/net/html"
 )
 
-const (
-	blue   = "\033[1;34m%s\033[0m"
-	red    = "\033[1;31m%s\033[0m"
-	green  = "\033[1;32m%s\033[0m"
-	yellow = "\033[1;33m%s\033[0m"
-)
+type result struct {
+	url, title, err string
+	responseCode    int
+}
 
 func getTitle(body io.ReadCloser) string {
 	tokenizer := html.NewTokenizer(body)
-	title := fmt.Sprintf(red, "<title> tag missing")
+	title := "<title> tag missing"
 	for {
 		tokenType := tokenizer.Next()
 		if tokenType == html.ErrorToken {
@@ -33,7 +31,7 @@ func getTitle(body io.ReadCloser) string {
 			if err == io.EOF {
 				break
 			} else {
-				title = fmt.Sprintf(red, err.Error())
+				title = err.Error()
 			}
 		}
 		if tokenType == html.StartTagToken {
@@ -49,7 +47,7 @@ func getTitle(body io.ReadCloser) string {
 	return title
 }
 
-func getWebContent(client *http.Client, wg *sync.WaitGroup, urls <-chan string, results chan<- []string, id int) {
+func getWebContent(client *http.Client, wg *sync.WaitGroup, urls <-chan string, results chan<- result, id int) {
 	// 4 - when finished, decrement the counter
 	defer wg.Done()
 
@@ -60,33 +58,37 @@ func getWebContent(client *http.Client, wg *sync.WaitGroup, urls <-chan string, 
 		req, err := http.NewRequest(http.MethodGet, url, nil)
 
 		if err != nil {
-			results <- []string{url, "-1", fmt.Sprintf(red, err.Error())}
+			results <- result{url: url, err: err.Error()}
 			return
 		}
 
 		resp, err := client.Do(req)
 
 		if err != nil {
-			results <- []string{url, "-1", fmt.Sprintf(red, err.Error())}
+			results <- result{url: url, err: err.Error()}
 			return
 		}
 
 		if resp != nil {
 			defer resp.Body.Close()
 			// 3 - write the result in 'results' channel
-			results <- []string{url, fmt.Sprint(resp.StatusCode), fmt.Sprintf(green, getTitle(resp.Body))}
+			results <- result{url: url, responseCode: resp.StatusCode, title: getTitle(resp.Body)}
+
 		}
 
 	}
 }
 
-func printOutput(wg *sync.WaitGroup, results <-chan []string) {
+func printOutput(wg *sync.WaitGroup, results <-chan result, colored bool) {
 	defer wg.Done()
-
-	for result := range results {
-		fmt.Printf(blue, result[0])
-		fmt.Printf(yellow, " --> ["+result[1]+"] ")
-		fmt.Printf(result[2] + "\n")
+	var template string
+	if colored {
+		template = "\033[1;34m%-60s\033[0m\033[1;33m[%-3s]\033[0m \033[1;32m%s\033[0m\033[1;31m%s\033[0m\n"
+	} else {
+		template = "%-60s[%-3s] %s%s\n"
+	}
+	for r := range results {
+		fmt.Printf(template, r.url, fmt.Sprint(r.responseCode), r.title, r.err)
 	}
 }
 
@@ -100,6 +102,9 @@ func main() {
 
 	var timeout int
 	flag.IntVar(&timeout, "t", 20, "Request timeout (in seconds)")
+
+	var colored bool
+	flag.BoolVar(&colored, "c", false, "Colored output")
 
 	flag.Parse()
 
@@ -131,7 +136,7 @@ func main() {
 
 	// channels
 	urls := make(chan string)
-	results := make(chan []string)
+	results := make(chan result)
 
 	var wg sync.WaitGroup
 	var resultWG sync.WaitGroup
@@ -150,7 +155,7 @@ func main() {
 
 	// we use only one worker for printing the output
 	resultWG.Add(1)
-	go printOutput(&resultWG, results)
+	go printOutput(&resultWG, results, colored)
 
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -161,7 +166,7 @@ func main() {
 	}
 
 	if scanner.Err() != nil {
-		fmt.Printf(red, scanner.Err())
+		fmt.Print(scanner.Err())
 	}
 
 	// close the channel (we don't need to send messages anymore)
