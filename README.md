@@ -29,7 +29,7 @@ Parameter   | Description
 ```
 cat urls.txt | titlextractor -f -c
 ```
-<img alt="titlextractor" title="titlextractor" src="./screen.png" width="450">
+<img alt="titlextractor" title="titlextractor" src="./screen.png" width="650">
 
 ---
 
