@@ -81,13 +81,30 @@ func getWebContent(client *http.Client, wg *sync.WaitGroup, urls <-chan string, 
 
 func printOutput(wg *sync.WaitGroup, results <-chan result, colored bool) {
 	defer wg.Done()
+
 	var template string
-	if colored {
-		template = "\033[1;34m%-50s\033[0m\033[1;33m[%-3s]\033[0m \033[1;32m%s\033[0m\033[1;31m%s\033[0m\n"
-	} else {
-		template = "%-50s[%-3s] %s%s\n"
-	}
 	for r := range results {
+		if colored {
+			var color string
+			code := r.responseCode
+			switch {
+			case 100 <= code && code <= 199:
+				color = "\033[1;30m[%-3s] %s\033[0m%2" // black
+			case 200 <= code && code <= 299:
+				color = "\033[1;32m[%-3s] %s\033[0m" // green
+			case 300 <= code && code <= 399:
+				color = "\033[1;33m[%-3s] %s\033[0m" // yellow
+			case 400 <= code && code <= 499:
+				color = "\033[1;34m[%-3s] %s\033[0m" // blue
+			default:
+				color = "\033[1;31m[%-3s] %s\033[0m" // red
+			}
+			template = "%-80s"+color+"\033[1;31m%s\033[0m\n"
+
+		} else {
+			template = "%-80s[%-3s] %s%s\n"
+		}
+
 		fmt.Printf(template, r.url, fmt.Sprint(r.responseCode), r.title, r.err)
 	}
 }
