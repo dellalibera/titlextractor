@@ -22,12 +22,12 @@ Parameter   | Description
 -t          | Specify the request timeout (expressed in seconds - default 20s)
 -f          | Boolean value used to decide to follow or not redirections (default false)
 -n          | Number of concurrent workers (default 20) 
-
+-c          | Boolean value used to color the output (default false)
 ---
 
 ## Examples
 ```
-cat urls.txt | titlextractor -f
+cat urls.txt | titlextractor -f -c
 ```
 <img alt="titlextractor" title="titlextractor" src="./screen.png" width="450">
 
