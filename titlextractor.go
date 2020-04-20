@@ -83,9 +83,9 @@ func printOutput(wg *sync.WaitGroup, results <-chan result, colored bool) {
 	defer wg.Done()
 	var template string
 	if colored {
-		template = "\033[1;34m%-60s\033[0m\033[1;33m[%-3s]\033[0m \033[1;32m%s\033[0m\033[1;31m%s\033[0m\n"
+		template = "\033[1;34m%-50s\033[0m\033[1;33m[%-3s]\033[0m \033[1;32m%s\033[0m\033[1;31m%s\033[0m\n"
 	} else {
-		template = "%-60s[%-3s] %s%s\n"
+		template = "%-50s[%-3s] %s%s\n"
 	}
 	for r := range results {
 		fmt.Printf(template, r.url, fmt.Sprint(r.responseCode), r.title, r.err)
